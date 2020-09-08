@@ -59,7 +59,7 @@ post_build_local:
   needs: ['build_image']
   script:
     - echo "$DOCKER_REG_PASSWORD" | docker login -u "$DOCKER_REG_USERNAME" "$DOCKER_REG_URL" --password-stdin
-    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION || true
     - docker tag $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest
     - docker push $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest
   tags:
@@ -82,9 +82,9 @@ deploy_local:
     - scp ./configs/$CONFIG_FILE $SERVER_USER@$SERVER_IP:$WORKING_PATH
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP
       "(echo $DOCKER_REG_PASSWORD | docker login -u $DOCKER_REG_USERNAME $DOCKER_REG_URL --password-stdin)
-      && docker pull $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest
+      && docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION
       && (docker rm -f $DOCKER_SERVICE_NAME-$DEPLOY_ENV || true)
-      && docker run --restart=always --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV -p $EXPOSE_PORT:$APP_PORT -v $WORKING_PATH/$CONFIG_FILE:/app/appsettings.json -d $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest"
+      && docker run --restart=always --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV -p $EXPOSE_PORT:$APP_PORT -v $WORKING_PATH/$CONFIG_FILE:/app/appsettings.json -d $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION"
   tags:
     - docker
   environment:
