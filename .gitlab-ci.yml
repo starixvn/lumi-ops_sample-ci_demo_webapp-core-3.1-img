@@ -71,11 +71,12 @@ deploy_local:
   stage: deploy
   needs: ['post_build_local']
   variables:
-    SERVER_IP: 10.18.200.133
+    SERVER_IP: 10.70.70.132
     SERVER_USER: root
     SERVER_PORT: 22
     EXPOSE_PORT: 6969
-    APP_PORT: 80
+    SWARM_REPLICAS: 2
+    DOCKER_NETWORK_NAME: testing_net
   script:
     - export CONFIG_FILE=appsettings.${DEPLOY_ENV}.json
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p $WORKING_PATH"
@@ -84,7 +85,12 @@ deploy_local:
       "(echo $DOCKER_REG_PASSWORD | docker login -u $DOCKER_REG_USERNAME $DOCKER_REG_URL --password-stdin)
       && docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION
       && (docker rm -f $DOCKER_SERVICE_NAME-$DEPLOY_ENV || true)
-      && docker run --restart=always --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV -p $EXPOSE_PORT:$APP_PORT -v $WORKING_PATH/$CONFIG_FILE:/app/appsettings.json -d $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION"
+      && docker service create
+        --mode replicated
+        --replicas $SWARM_REPLICAS
+        --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
+        --network $DOCKER_NETWORK_NAME
+        --endpoint-mode dnsrr"
   tags:
     - docker
   environment:
