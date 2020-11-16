@@ -126,7 +126,7 @@ deploy_local:
         --replicas $SWARM_REPLICAS
         --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
         --network $DOCKER_NETWORK_NAME
-        --endpoint-mode dnsrr
+        --endpoint-mode dnsrr"
     - if [ ! -z "$CONFIG_FILE_NAME" ]; 
       then
         export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} --mount type=bind,source=$WORKING_PATH/$CONFIG_FILE,target=$CONFIG_CONTAINER_PATH,ro=true";
