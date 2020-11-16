@@ -37,7 +37,7 @@ before_script:
   - export CI_REGISTRY_IMAGE=$DOCKER_REG_URL/$DOCKER_REPO/$DOCKER_SERVICE_NAME
   - export CI_REGISTRY_IMAGE_VERSION=${CI_COMMIT_SHA:0:8}
   - echo $CI_REGISTRY_IMAGE
-   - if [ "$DOCKER_FILE_PATH" == "" ];
+  - if [ "$DOCKER_FILE_PATH" == "" ];
     then
     export DOCKER_FILE_PATH=".";
     else
