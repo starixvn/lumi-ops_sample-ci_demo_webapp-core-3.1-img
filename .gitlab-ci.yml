@@ -122,7 +122,8 @@ deploy_local:
         --replicas $SWARM_REPLICAS
         --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
         --network $DOCKER_NETWORK_NAME
-        --endpoint-mode dnsrr"
+        --endpoint-mode dnsrr
+        $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION"
   tags:
     - docker
   environment:
