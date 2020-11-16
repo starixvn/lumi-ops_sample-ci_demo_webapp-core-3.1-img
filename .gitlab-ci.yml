@@ -103,7 +103,7 @@ deploy_local:
   stage: deploy
   needs: ['post_build_local']
   variables:
-    SERVER_IP: 10.10.50.14
+    SERVER_IP: 10.70.70.33
     SERVER_USER: root
     SERVER_PORT: 22
     EXPOSE_PORT: 6969
