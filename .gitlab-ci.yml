@@ -29,6 +29,7 @@ before_script:
     exit 1;
     fi
   - eval $(ssh-agent -s)
+  - echo $SSH_KEY
   - echo "$SSH_KEY" | ssh-add -
   - mkdir -p ~/.ssh
   - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
