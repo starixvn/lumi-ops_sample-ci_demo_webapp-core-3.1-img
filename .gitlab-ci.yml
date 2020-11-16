@@ -110,20 +110,38 @@ deploy_local:
     SWARM_REPLICAS: 2
     DOCKER_NETWORK_NAME: testing_net
   script:
-    - export CONFIG_FILE=appsettings.${DEPLOY_ENV}.json
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p $WORKING_PATH"
-    - scp ./configs/$CONFIG_FILE $SERVER_USER@$SERVER_IP:$WORKING_PATH
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP
-      "(echo $DOCKER_REG_PASSWORD | docker login -u $DOCKER_REG_USERNAME $DOCKER_REG_URL --password-stdin)
-      && docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION
-      && (docker rm -f $DOCKER_SERVICE_NAME-$DEPLOY_ENV || true)
-      && docker service create
+    - for NODE in $SWARM_NODES;
+      do
+        export NODE_PORT=22;
+        echo $NODE:$NODE_PORT;
+        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE "mkdir -p $WORKING_PATH";
+        echo "COPY CONFIG FILE LOCAL ...";
+        scp $CONFIGS_SRC_DIR_PATH/$CONFIG_FILE $SERVER_USER@$NODE:$WORKING_PATH;
+        echo "PULLING IMAGE ... ";
+        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker login -u $DOCKER_REG_USERNAME -p $DOCKER_REG_PASSWORD $DOCKER_REG_URL;
+        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION;
+      done
+    - export CREATE_SERVICE_CMD="docker service create
         --mode replicated
         --replicas $SWARM_REPLICAS
         --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
         --network $DOCKER_NETWORK_NAME
         --endpoint-mode dnsrr
-        $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION"
+        --constraint node.labels.$NODE_LABEL==yes"
+    - if [ ! -z "$CONFIG_FILE_NAME" ]; 
+      then
+        export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} --mount type=bind,source=$WORKING_PATH/$CONFIG_FILE,target=$CONFIG_CONTAINER_PATH,ro=true";
+      else
+        echo "Not mount config file";
+      fi
+    - export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION"
+    - echo $CREATE_SERVICE_CMD
+    - ssh -o StrictHostKeyChecking=no -p $SERVER_PORT $SERVER_USER@$SERVER_IP
+        "docker service ls | grep $DOCKER_SERVICE_NAME-$DEPLOY_ENV
+        && echo "Updating service"
+        && docker service update --image $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $DOCKER_SERVICE_NAME-$DEPLOY_ENV
+        || (echo "Creating service" && $CREATE_SERVICE_CMD)"
+
   tags:
     - docker
   environment:
