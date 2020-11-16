@@ -112,18 +112,18 @@ deploy_local:
   stage: deploy
   needs: ['post_build_local']
   variables:
-    SERVER_IP: 10.70.70.33
-    SWARM_NODES: "10.70.70.32 10.70.70.33 10.70.70.34"
-    SERVER_USER: root
-    SERVER_PORT: 22
-    EXPOSE_PORT: 6969
-    SWARM_REPLICAS: 3
-    DOCKER_NETWORK_NAME: testing_net
+    #SERVER_IP: 10.70.70.33
+    #SWARM_NODES: "10.70.70.32 10.70.70.33 10.70.70.34"
+    #SERVER_USER: root
+    #SERVER_PORT: 22
+    #EXPOSE_PORT: 6969
+    SWARM_REPLICAS: 2
+    #DOCKER_NETWORK_NAME: testing_net
 
   script:
     - for NODE in $SWARM_NODES;
       do
-        export NODE_PORT=22;
+        export NODE_PORT=$SERVER_PORT;
         echo $NODE:$NODE_PORT;
         ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE "mkdir -p $WORKING_PATH";
         echo "COPY CONFIG FILE LOCAL ...";
