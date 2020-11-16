@@ -117,7 +117,7 @@ deploy_local:
     SERVER_USER: root
     SERVER_PORT: 22
     EXPOSE_PORT: 6969
-    SWARM_REPLICAS: 2
+    SWARM_REPLICAS: 3
     DOCKER_NETWORK_NAME: testing_net
 
   script:
