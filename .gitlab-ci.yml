@@ -105,6 +105,7 @@ deploy_local:
   needs: ['post_build_local']
   variables:
     SERVER_IP: 10.70.70.33
+    SWARM_NODES: "10.70.70.32 10.70.70.33 10.70.70.34"
     SERVER_USER: root
     SERVER_PORT: 22
     EXPOSE_PORT: 6969
