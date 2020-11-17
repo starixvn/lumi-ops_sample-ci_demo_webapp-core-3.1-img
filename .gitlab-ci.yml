@@ -1,4 +1,5 @@
-image: docker:19.03.12
+image: git3.nexdev.net:5050/lumi-ops/docker-images/docker:19.03.12
+#docker:19.03.12
 
 variables:
   WORKING_PATH: /var/www/sample-ci/sample-dotnetcore/
@@ -15,7 +16,7 @@ variables:
   #CI_COMMIT_TAG: 6c125f87
 
 services:
-  - docker:19.03.12-dind
+  - git3.nexdev.net:5050/lumi-ops/docker-images/docker:19.03.12
 
 stages:
   - build
