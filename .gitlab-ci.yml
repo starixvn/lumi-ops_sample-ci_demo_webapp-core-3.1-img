@@ -139,7 +139,7 @@ deploy_local:
         --replicas $SWARM_REPLICAS
         --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
         --network $DOCKER_NETWORK_NAME
-        --endpoint-mode dnsrr"
+        --endpoint-mode dnsrr
         --constraint node.labels.$NODE_LABEL==yes"
     - if [ ! -z "$CONFIG_FILE_NAME" ]; 
       then
