@@ -118,7 +118,8 @@ deploy_local:
     #SERVER_USER: root
     #SERVER_PORT: 22
     #EXPOSE_PORT: 6969
-    SWARM_REPLICAS: 2
+    NODE_LABEL: "Demo-Service1"
+    SWARM_REPLICAS: 3
     #DOCKER_NETWORK_NAME: testing_net
 
   script:
@@ -139,6 +140,7 @@ deploy_local:
         --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
         --network $DOCKER_NETWORK_NAME
         --endpoint-mode dnsrr"
+        --constraint node.labels.$NODE_LABEL==yes"
     - if [ ! -z "$CONFIG_FILE_NAME" ]; 
       then
         export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} --mount type=bind,source=$WORKING_PATH/$CONFIG_FILE,target=$CONFIG_CONTAINER_PATH,ro=true";
