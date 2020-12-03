@@ -1,4 +1,4 @@
-FROM git3.nexdev.net:5050/lumi-ops/docker-images/dotnet/core/sdk:3.1 AS builder
+FROM registry.nexdev.net:5050/docker/dotnet/core/sdk:3.1 AS builder
 WORKDIR /app
 
 # Copy csproj and restore as distinct layers
@@ -10,7 +10,7 @@ COPY ./src ./
 RUN dotnet publish -c Release -o out
 
 # Build runtime image
-FROM git3.nexdev.net:5050/lumi-ops/docker-images/dotnet/core/aspnet:3.1
+FROM registry.nexdev.net:5050/docker/dotnet/core/aspnet:3.1
 WORKDIR /app
 COPY --from=builder /app/out .
 ENTRYPOINT ["dotnet", "dotnet-docker.dll"]
