@@ -8,7 +8,7 @@ variables:
   DOCKER_REG_URL_Nexdev: registry.nexdev.net:5050
   DOCKER_REG_USERNAME_Nexdev: gitlab-ci
   DOCKER_REG_PASSWORD_Nexdev: 5j_3-pKrzGHbLGDUzBZN
-  DOCKER_REPO: nexcel/nexops/demo
+  DOCKER_REPO_Nexdev: nexcel/nexops/demo
   DOCKER_IMAGE_NAME: aspnet-3.1
 ####
   CONFIG_FILE_NAME: appsettings
@@ -43,7 +43,7 @@ before_script:
   - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - export COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-  - export CI_REGISTRY_IMAGE=$DOCKER_REG_URL_Nexdev/$DOCKER_REPO/$DOCKER_IMAGE_NAME
+  - export CI_REGISTRY_IMAGE=$DOCKER_REG_URL_Nexdev/$DOCKER_REPO_Nexdev/$DOCKER_IMAGE_NAME
   - export CI_REGISTRY_IMAGE_VERSION=${CI_COMMIT_SHA:0:8}
   - echo $CI_REGISTRY_IMAGE
   - if [ "$DOCKER_FILE_PATH" == "" ];
