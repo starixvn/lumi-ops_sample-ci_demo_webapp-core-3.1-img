@@ -6,8 +6,8 @@ variables:
   WORKING_PATH: /var/www/sample-ci/sample-dotnetcore/
   DOCKER_SERVICE_NAME: webapp-core
   DOCKER_REG_URL_Nexdev: registry.nexdev.net:5050
-  DOCKER_REG_USERNAME: gitlab-ci
-  DOCKER_REG_PASSWORD: 5j_3-pKrzGHbLGDUzBZN
+  DOCKER_REG_USERNAME_Nexdev: gitlab-ci
+  DOCKER_REG_PASSWORD_Nexdev: 5j_3-pKrzGHbLGDUzBZN
   DOCKER_REPO: nexcel/nexops/demo
   DOCKER_IMAGE_NAME: aspnet-3.1
 ####
@@ -74,7 +74,7 @@ build_image:
   stage: build
   script:
     - echo $DOCKER_FILE_PATH
-    - docker login -u $DOCKER_REG_USERNAME -p $DOCKER_REG_PASSWORD $DOCKER_REG_URL_Nexdev
+    - docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev
     - docker pull $CI_REGISTRY_IMAGE:builder || true
     - docker build
       --target builder
@@ -98,7 +98,7 @@ post_build_local:
   stage: post-build
   needs: ['build_image']
   script:
-    - echo "$DOCKER_REG_PASSWORD" | docker login -u "$DOCKER_REG_USERNAME" "$DOCKER_REG_URL_Nexdev" --password-stdin
+    - echo "$DOCKER_REG_PASSWORD_Nexdev" | docker login -u "$DOCKER_REG_USERNAME_Nexdev" "$DOCKER_REG_URL_Nexdev" --password-stdin
     - docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION || true
     - docker tag $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest
     - docker push $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest
@@ -129,7 +129,7 @@ deploy_local:
         echo "COPY CONFIG FILE LOCAL ...";
         scp $CONFIGS_SRC_DIR_PATH/$CONFIG_FILE $SERVER_USER@$NODE:$WORKING_PATH;
         echo "PULLING IMAGE ... ";
-        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker login -u $DOCKER_REG_USERNAME -p $DOCKER_REG_PASSWORD $DOCKER_REG_URL_Nexdev;
+        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev;
         ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION;
       done
     - export CREATE_SERVICE_CMD="docker service create
