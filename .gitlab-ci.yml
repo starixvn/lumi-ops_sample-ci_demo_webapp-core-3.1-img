@@ -99,8 +99,6 @@ before_script:
 
 build_image:
   stage: build
-  extends:
-    - .deploy:local1:rules
   script:
     - echo $DOCKER_FILE_PATH
     - docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev
