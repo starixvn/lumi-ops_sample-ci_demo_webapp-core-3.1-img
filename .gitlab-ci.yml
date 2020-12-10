@@ -1,17 +1,8 @@
 image: registry.nexdev.net:5050/docker/docker-engine/docker:19.03.14
 #docker:19.03.12
-variables:
-    SERVER_IP: 10.70.70.33
-    SWARM_NODES: "10.70.70.32 10.70.70.33 10.70.70.34"
-    SERVER_USER: root
-    SERVER_PORT: 22
-    EXPOSE_PORT: 6969
-    NODE_LABEL: "Demo-Service1"
-    SWARM_REPLICAS: 3
-    DOCKER_NETWORK_NAME: testing_net
     
 .if-deploy-local: &if-deploy-local
-    if: '$CI_COMMIT_TAG =~ /^deploy-local-*$/'
+    if: '$CI_COMMIT_TAG =~ /^deploy-local-*/'
 
 .deploy:local:rules:
     rules:
@@ -20,7 +11,7 @@ variables:
         - when: never
         
 .if-deploy-local1: &if-deploy-local1
-    if: '$CI_COMMIT_TAG =~ /^deploy-local1-*$/'
+    if: '$CI_COMMIT_TAG =~ /^deploy-local1-*/'
 
 .deploy:local1:rules:
     rules:
@@ -42,6 +33,14 @@ variables:
   CONFIG_FILE_EXTENSION: json
   CONFIGS_SRC_DIR_PATH: ./configs
   CONFIG_CONTAINER_PATH: /app/appsettings.json
+  SERVER_IP: 10.70.70.33
+  SWARM_NODES: "10.70.70.32 10.70.70.33 10.70.70.34"
+  SERVER_USER: root
+  SERVER_PORT: 22
+  EXPOSE_PORT: 6969
+  NODE_LABEL: "Demo-Service1"
+  SWARM_REPLICAS: 3
+  DOCKER_NETWORK_NAME: testing_net
 
 stages:
   - build
@@ -99,6 +98,8 @@ before_script:
 
 build_image:
   stage: build
+  extends:
+    - .deploy:local1:rules
   script:
     - echo $DOCKER_FILE_PATH
     - docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev
@@ -173,7 +174,6 @@ deploy_local:
         && echo "Updating service"
         && docker service update --image $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $DOCKER_SERVICE_NAME-$DEPLOY_ENV
         || (echo "Creating service" && $CREATE_SERVICE_CMD)"
-
   tags:
     - docker
   environment:
