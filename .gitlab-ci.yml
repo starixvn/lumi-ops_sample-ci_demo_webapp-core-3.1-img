@@ -13,9 +13,18 @@ image: registry.nexdev.net:5050/docker/docker-engine/docker:19.03.14
 .if-deploy-local1: &if-deploy-local1
     if: '$CI_COMMIT_TAG =~ /^deploy-local1-*/'
 
+.if-deploy-local2: &if-deploy-local2
+    if: '$CI_COMMIT_TAG =~ /^deploy-local2-dev-*/'
+
 .deploy:local1:rules:
     rules:
         - <<: *if-deploy-local1
+          when: on_success
+        - when: never
+        
+.deploy:local2:rules:
+    rules:
+        - <<: *if-deploy-local2
           when: on_success
         - when: never
         
@@ -100,6 +109,7 @@ build_image:
   stage: build
   extends:
     - .deploy:local1:rules
+    - .deploy:local2:rules
   script:
     - echo $DOCKER_FILE_PATH
     - docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev
@@ -125,6 +135,7 @@ build_image:
 post_build_local:
   extends:
     - .deploy:local1:rules
+    - .deploy:local2:rules
   stage: post-build
   needs: ['build_image']
   script:
@@ -140,6 +151,7 @@ post_build_local:
 deploy_local:
   extends:
     - .deploy:local1:rules
+    - .deploy:local2:rules
   stage: deploy
   needs: ['post_build_local']
   script:
