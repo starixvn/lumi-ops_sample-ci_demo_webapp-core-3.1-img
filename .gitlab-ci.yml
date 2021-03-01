@@ -54,7 +54,7 @@ variables:
 stages:
   - build
   - post-build
-  - deploy
+  # - deploy
 
 before_script:
   - docker info
@@ -148,45 +148,45 @@ post_build_local:
   environment:
     name: LOCAL
 
-deploy_local:
-  extends:
-    - .deploy:local1:rules
-    - .deploy:local2:rules
-  stage: deploy
-  needs: ['post_build_local']
-  script:
-    - for NODE in $SWARM_NODES;
-      do
-        export NODE_PORT=$SERVER_PORT;
-        echo $NODE:$NODE_PORT;
-        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE "mkdir -p $WORKING_PATH";
-        echo "COPY CONFIG FILE LOCAL ...";
-        scp $CONFIGS_SRC_DIR_PATH/$CONFIG_FILE $SERVER_USER@$NODE:$WORKING_PATH;
-        echo "PULLING IMAGE ... ";
-        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev;
-        ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION;
-      done
-    - export CREATE_SERVICE_CMD="docker service create
-        --mode replicated
-        --replicas $SWARM_REPLICAS
-        --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
-        --network $DOCKER_NETWORK_NAME
-        --endpoint-mode dnsrr
-        --constraint node.labels.$NODE_LABEL==yes"
-    - if [ ! -z "$CONFIG_FILE_NAME" ]; 
-      then
-        export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} --mount type=bind,source=$WORKING_PATH/$CONFIG_FILE,target=$CONFIG_CONTAINER_PATH,ro=true";
-      else
-        echo "Not mount config file";
-      fi
-    - export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION"
-    - echo $CREATE_SERVICE_CMD
-    - ssh -o StrictHostKeyChecking=no -p $SERVER_PORT $SERVER_USER@$SERVER_IP
-        "docker service ls | grep $DOCKER_SERVICE_NAME-$DEPLOY_ENV
-        && echo "Updating service"
-        && docker service update --image $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $DOCKER_SERVICE_NAME-$DEPLOY_ENV
-        || (echo "Creating service" && $CREATE_SERVICE_CMD)"
-  tags:
-    - docker
-  environment:
-    name: LOCAL
+# deploy_local:
+#   extends:
+#     - .deploy:local1:rules
+#     - .deploy:local2:rules
+#   stage: deploy
+#   needs: ['post_build_local']
+#   script:
+#     - for NODE in $SWARM_NODES;
+#       do
+#         export NODE_PORT=$SERVER_PORT;
+#         echo $NODE:$NODE_PORT;
+#         ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE "mkdir -p $WORKING_PATH";
+#         echo "COPY CONFIG FILE LOCAL ...";
+#         scp $CONFIGS_SRC_DIR_PATH/$CONFIG_FILE $SERVER_USER@$NODE:$WORKING_PATH;
+#         echo "PULLING IMAGE ... ";
+#         ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev;
+#         ssh -o StrictHostKeyChecking=no -p $NODE_PORT $SERVER_USER@$NODE docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION;
+#       done
+#     - export CREATE_SERVICE_CMD="docker service create
+#         --mode replicated
+#         --replicas $SWARM_REPLICAS
+#         --name $DOCKER_SERVICE_NAME-$DEPLOY_ENV
+#         --network $DOCKER_NETWORK_NAME
+#         --endpoint-mode dnsrr
+#         --constraint node.labels.$NODE_LABEL==yes"
+#     - if [ ! -z "$CONFIG_FILE_NAME" ]; 
+#       then
+#         export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} --mount type=bind,source=$WORKING_PATH/$CONFIG_FILE,target=$CONFIG_CONTAINER_PATH,ro=true";
+#       else
+#         echo "Not mount config file";
+#       fi
+#     - export CREATE_SERVICE_CMD="${CREATE_SERVICE_CMD} $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION"
+#     - echo $CREATE_SERVICE_CMD
+#     - ssh -o StrictHostKeyChecking=no -p $SERVER_PORT $SERVER_USER@$SERVER_IP
+#         "docker service ls | grep $DOCKER_SERVICE_NAME-$DEPLOY_ENV
+#         && echo "Updating service"
+#         && docker service update --image $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $DOCKER_SERVICE_NAME-$DEPLOY_ENV
+#         || (echo "Creating service" && $CREATE_SERVICE_CMD)"
+#   tags:
+#     - docker
+#   environment:
+#     name: LOCAL
