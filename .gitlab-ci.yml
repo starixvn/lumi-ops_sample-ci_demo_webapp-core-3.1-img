@@ -95,11 +95,35 @@ before_script:
     fi
   - echo $DOCKER_NETWORK_NAME
 
-
-build_image:
+build_image_local1:
   stage: build
   extends:
     - .deploy:local1:rules
+  script:
+    - echo $DOCKER_FILE_PATH
+    - docker login -u $DOCKER_REG_USERNAME_Nexdev -p $DOCKER_REG_PASSWORD_Nexdev $DOCKER_REG_URL_Nexdev
+    - docker pull $CI_REGISTRY_IMAGE:builder || true
+    - docker build
+      --target builder
+      --cache-from $CI_REGISTRY_IMAGE:builder
+      -f $DOCKER_FILE_PATH/$DOCKER_FILE_NAME
+      --tag $CI_REGISTRY_IMAGE:builder .
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build
+      --cache-from $CI_REGISTRY_IMAGE:builder
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      -f $DOCKER_FILE_PATH/$DOCKER_FILE_NAME
+      --tag $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION .
+    - docker push $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION
+    - docker tag $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:builder
+  tags:
+    - docker
+
+build_image_local2:
+  stage: build
+  extends:
     - .deploy:local2:rules
   script:
     - echo $DOCKER_FILE_PATH
@@ -123,9 +147,23 @@ build_image:
   tags:
     - docker
 
-post_build_local:
+post_build_local1:
   extends:
     - .deploy:local1:rules
+  stage: post-build
+  needs: ['build_image']
+  script:
+    - echo "$DOCKER_REG_PASSWORD_Nexdev" | docker login -u "$DOCKER_REG_USERNAME_Nexdev" "$DOCKER_REG_URL_Nexdev" --password-stdin
+    - docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION || true
+    - docker tag $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest
+    - docker push $CI_REGISTRY_IMAGE:$DEPLOY_ENV-latest
+  tags:
+    - docker
+  environment:
+    name: LOCAL
+
+post_build_local2:
+  extends:
     - .deploy:local2:rules
   stage: post-build
   needs: ['build_image']
