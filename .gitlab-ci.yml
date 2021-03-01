@@ -151,7 +151,7 @@ post_build_local1:
   extends:
     - .deploy:local1:rules
   stage: post-build
-  needs: ['build_image']
+  needs: ['build_image_local1']
   script:
     - echo "$DOCKER_REG_PASSWORD_Nexdev" | docker login -u "$DOCKER_REG_USERNAME_Nexdev" "$DOCKER_REG_URL_Nexdev" --password-stdin
     - docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION || true
@@ -166,7 +166,7 @@ post_build_local2:
   extends:
     - .deploy:local2:rules
   stage: post-build
-  needs: ['build_image']
+  needs: ['build_image_local2']
   script:
     - echo "$DOCKER_REG_PASSWORD_Nexdev" | docker login -u "$DOCKER_REG_USERNAME_Nexdev" "$DOCKER_REG_URL_Nexdev" --password-stdin
     - docker pull $CI_REGISTRY_IMAGE:$CI_REGISTRY_IMAGE_VERSION || true
